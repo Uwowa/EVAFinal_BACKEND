@@ -1,0 +1,217 @@
+{% extends 'nucleo/base.html' %}
+
+{% block content %}
+<style>
+    body {
+        background: linear-gradient(135deg, #f3e5f5 0%, #e8eaf6 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .navbar {
+        display: none !important;
+    }
+
+    .sidebar {
+        display: none !important;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .login-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(138, 43, 226, 0.1);
+        width: 100%;
+        max-width: 420px;
+        overflow: hidden;
+        border: 1px solid rgba(138, 43, 226, 0.1);
+    }
+
+    .login-header {
+        background: linear-gradient(135deg, #8a2be2, #ff69b4);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .login-icon {
+        background: rgba(255, 255, 255, 0.2);
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+
+    .login-icon i {
+        font-size: 2.5rem;
+    }
+
+    .login-body {
+        padding: 40px;
+    }
+
+    .form-control {
+        border: 2px solid #e1bee7;
+        border-radius: 10px;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #8a2be2;
+        box-shadow: 0 0 0 0.25rem rgba(138, 43, 226, 0.15);
+    }
+
+    .btn-login {
+        background: linear-gradient(135deg, #8a2be2, #ff69b4);
+        border: none;
+        color: white;
+        padding: 14px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 7px 20px rgba(138, 43, 226, 0.3);
+    }
+
+    .form-label {
+        color: #5e35b1;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .text-danger {
+        color: #ff4081 !important;
+        font-size: 0.875rem;
+        margin-top: 5px;
+    }
+
+    .alert {
+        border-radius: 10px;
+        border: none;
+        margin-bottom: 25px;
+    }
+
+    .alert-danger {
+        background: linear-gradient(135deg, #ff4081, #ff79b0);
+        color: white;
+    }
+
+    .footer-text {
+        text-align: center;
+        margin-top: 30px;
+        color: #7986cb;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 576px) {
+        .login-body {
+            padding: 30px 20px;
+        }
+
+        .login-header {
+            padding: 20px;
+        }
+    }
+</style>
+
+<div class="login-container">
+    <!-- Header del Login -->
+    <div class="login-header">
+        <div class="login-icon">
+            <i class="bi bi-person-fill"></i>
+        </div>
+        <h2 class="mb-0">Inicio de sesión</h2>
+    </div>
+
+    <!-- Cuerpo del formulario -->
+    <div class="login-body">
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <div>{{ form.non_field_errors }}</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Campo Usuario -->
+            <div class="mb-4">
+                <label for="id_username" class="form-label">
+                    <i class="bi bi-person me-1"></i>Usuario
+                </label>
+                <input type="text" name="username" id="id_username" class="form-control"
+                    placeholder="Ingresa tu usuario" required>
+                {% if form.username.errors %}
+                <div class="text-danger">{{ form.username.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Campo Contraseña -->
+            <div class="mb-4">
+                <label for="id_password" class="form-label">
+                    <i class="bi bi-lock me-1"></i>Contraseña
+                </label>
+                <input type="password" name="password" id="id_password" class="form-control"
+                    placeholder="Ingresa tu contraseña" required>
+                {% if form.password.errors %}
+                <div class="text-danger">{{ form.password.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Botón de Login -->
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn-login">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                    Ingresar
+                </button>
+            </div>
+        </form>
+
+        <div class="footer-text">
+            Sistema de Gestión de Proyectos
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Añadir clase de validación a los campos
+        const inputs = document.querySelectorAll('input[required]');
+        inputs.forEach(input => {
+            input.addEventListener('blur', function () {
+                if (!this.value) {
+                    this.classList.add('is-invalid');
+                } else {
+                    this.classList.remove('is-invalid');
+                }
+            });
+        });
+
+        // Enfocar automáticamente el primer campo
+        document.getElementById('id_username')?.focus();
+    });
+</script>
+{% endblock %}

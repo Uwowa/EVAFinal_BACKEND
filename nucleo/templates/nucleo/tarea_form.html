@@ -1,0 +1,388 @@
+{% extends 'nucleo/base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <!-- Tarjeta del formulario -->
+            <div class="card border-0 shadow-lg">
+                <!-- Header con gradiente - Sin óvalos -->
+                <div class="card-header py-4 text-center text-white" 
+                     style="background: linear-gradient(135deg, #6a5acd, #7b68ee); border-radius: 15px 15px 0 0;">
+                    <div class="mb-3">
+                        <i class="bi bi-{% if form.instance.pk %}pencil-square{% else %}plus-circle{% endif %} fs-1 mb-3"></i>
+                        <h3 class="fw-bold mb-2">
+                            {% if form.instance.pk %}
+                            Editar Tarea
+                            {% else %}
+                            Nueva Tarea
+                            {% endif %}
+                        </h3>
+                    </div>
+                    <p class="mb-0 opacity-75">
+                        {% if form.instance.pk %}
+                        Modifica los detalles de la tarea existente
+                        {% else %}
+                        Completa todos los campos para crear una nueva tarea
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <!-- Cuerpo del formulario -->
+                <div class="card-body p-4 p-lg-5">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                                <div>{{ form.non_field_errors }}</div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Título -->
+                        <div class="mb-4">
+                            <label for="id_titulo" class="form-label fw-semibold">
+                                <i class="bi bi-card-heading me-2 text-blue"></i>Título de la Tarea
+                            </label>
+                            <input type="text" 
+                                   name="titulo" 
+                                   id="id_titulo" 
+                                   class="form-control form-control-lg {% if form.titulo.errors %}is-invalid{% endif %}" 
+                                   placeholder="Ej: Revisar informe mensual"
+                                   value="{{ form.titulo.value|default:'' }}"
+                                   required>
+                            {% if form.titulo.errors %}
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-circle me-1"></i>{{ form.titulo.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">Un título claro y descriptivo para la tarea</small>
+                        </div>
+                        
+                        <!-- Descripción -->
+                        <div class="mb-4">
+                            <label for="id_descripcion" class="form-label fw-semibold">
+                                <i class="bi bi-text-paragraph me-2 text-blue"></i>Descripción
+                            </label>
+                            <textarea name="descripcion" 
+                                      id="id_descripcion" 
+                                      class="form-control {% if form.descripcion.errors %}is-invalid{% endif %}" 
+                                      rows="3"
+                                      placeholder="Describe los detalles de la tarea...">{{ form.descripcion.value|default:'' }}</textarea>
+                            {% if form.descripcion.errors %}
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-circle me-1"></i>{{ form.descripcion.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">Opcional. Proporciona más detalles si es necesario</small>
+                        </div>
+                        
+                        <!-- Fila de Categoría y Etiqueta -->
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="id_categoria" class="form-label fw-semibold">
+                                    <i class="bi bi-tags me-2 text-blue"></i>Categoría
+                                </label>
+                                <select name="categoria" 
+                                        id="id_categoria" 
+                                        class="form-select {% if form.categoria.errors %}is-invalid{% endif %}">
+                                    <option value="">Selecciona una categoría</option>
+                                    {% for choice in form.categoria.field.queryset %}
+                                    <option value="{{ choice.pk }}" 
+                                            {% if form.categoria.value|stringformat:"i" == choice.pk|stringformat:"i" %}selected{% endif %}>
+                                        {{ choice.nombre }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.categoria.errors %}
+                                <div class="invalid-feedback d-block">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.categoria.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <label for="id_etiqueta" class="form-label fw-semibold">
+                                    <i class="bi bi-bookmark me-2 text-blue"></i>Etiqueta
+                                </label>
+                                <select name="etiqueta" 
+                                        id="id_etiqueta" 
+                                        class="form-select {% if form.etiqueta.errors %}is-invalid{% endif %}">
+                                    <option value="">Selecciona una etiqueta (opcional)</option>
+                                    {% for choice in form.etiqueta.field.queryset %}
+                                    <option value="{{ choice.pk }}" 
+                                            {% if form.etiqueta.value|stringformat:"i" == choice.pk|stringformat:"i" %}selected{% endif %}>
+                                        {{ choice.nombre }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.etiqueta.errors %}
+                                <div class="invalid-feedback d-block">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.etiqueta.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Fecha de Vencimiento -->
+                        <div class="mb-4">
+                            <label for="id_fecha_vencimiento" class="form-label fw-semibold">
+                                <i class="bi bi-calendar-event me-2 text-blue"></i>Fecha de Vencimiento
+                            </label>
+                            <input type="date" 
+                                   name="fecha_vencimiento" 
+                                   id="id_fecha_vencimiento" 
+                                   class="form-control {% if form.fecha_vencimiento.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.fecha_vencimiento.value|date:'Y-m-d'|default:'' }}">
+                            {% if form.fecha_vencimiento.errors %}
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-circle me-1"></i>{{ form.fecha_vencimiento.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">Opcional. Establece una fecha límite para la tarea</small>
+                        </div>
+                        
+                        <!-- Checkbox Completada (solo para editar) -->
+                        {% if form.instance.pk %}
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       name="completada" 
+                                       id="id_completada" 
+                                       {% if form.completada.value %}checked{% endif %}>
+                                <label class="form-check-label fw-semibold" for="id_completada">
+                                    <i class="bi bi-check-circle me-2 text-blue"></i>Marcar como completada
+                                </label>
+                            </div>
+                            <small class="text-muted d-block mt-1">
+                                Activa este interruptor si la tarea ya está finalizada
+                            </small>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Botones de acción -->
+                        <div class="d-flex justify-content-between mt-5 pt-4 border-top">
+                            <a href="{% url 'tarea_list' %}" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="bi bi-arrow-left me-2"></i>Volver al listado
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="bi bi-{% if form.instance.pk %}check-lg{% else %}plus-lg{% endif %} me-2"></i>
+                                {% if form.instance.pk %}Actualizar{% else %}Crear{% endif %} Tarea
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Información adicional -->
+            <div class="text-center mt-4">
+                <div class="d-inline-flex align-items-center bg-light rounded-pill px-4 py-2">
+                    <i class="bi bi-info-circle text-blue me-2"></i>
+                    <small class="text-muted">
+                        {% if form.instance.pk %}
+                        Los cambios se guardarán inmediatamente
+                        {% else %}
+                        La tarea se agregará a tu lista después de guardar
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos específicos para el formulario */
+    .text-blue {
+        color: #6a5acd !important;
+    }
+    
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+        border: none;
+    }
+    
+    .form-control, .form-select {
+        border: 2px solid #e6e6fa;
+        border-radius: 10px;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #6a5acd;
+        box-shadow: 0 0 0 0.25rem rgba(106, 90, 205, 0.15);
+    }
+    
+    .form-control-lg {
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #6a5acd, #7b68ee);
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(106, 90, 205, 0.3);
+    }
+    
+    .btn-outline-secondary {
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        color: #6c757d;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-secondary:hover {
+        border-color: #6a5acd;
+        color: #6a5acd;
+        background-color: rgba(106, 90, 205, 0.05);
+    }
+    
+    .form-check-input:checked {
+        background-color: #6a5acd;
+        border-color: #6a5acd;
+    }
+    
+    .form-check-input:focus {
+        border-color: #7b68ee;
+        box-shadow: 0 0 0 0.25rem rgba(106, 90, 205, 0.25);
+    }
+    
+    .form-switch .form-check-input {
+        width: 3em;
+        height: 1.5em;
+    }
+    
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+    
+    .is-invalid:focus {
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+    }
+    
+    .alert {
+        border-radius: 10px;
+        border: none;
+    }
+    
+    .alert-danger {
+        background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(220, 53, 69, 0.05));
+        border-left: 4px solid #dc3545;
+        color: #dc3545;
+    }
+    
+    /* Estilo para el textarea */
+    textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    /* Estilo para el icono grande en el header */
+    .card-header .fs-1 {
+        font-size: 3rem !important;
+        display: block;
+        margin-bottom: 1rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 2rem !important;
+        }
+        
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .d-flex.justify-content-between a,
+        .d-flex.justify-content-between button {
+            width: 100%;
+        }
+        
+        .form-control-lg {
+            font-size: 1rem;
+        }
+        
+        .card-header .fs-1 {
+            font-size: 2.5rem !important;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Validación del formulario
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                
+                form.classList.add('was-validated');
+            }, false);
+        });
+        
+        // Establecer fecha mínima para el campo de fecha (hoy)
+        const fechaInput = document.getElementById('id_fecha_vencimiento');
+        if (fechaInput) {
+            const today = new Date().toISOString().split('T')[0];
+            fechaInput.min = today;
+            
+            // Si hay un valor, asegurarse de que esté en el formato correcto
+            if (fechaInput.value) {
+                const dateValue = new Date(fechaInput.value);
+                fechaInput.value = dateValue.toISOString().split('T')[0];
+            }
+        }
+        
+        // Enfocar automáticamente el primer campo
+        const firstInput = document.querySelector('input:not([type="hidden"]), textarea, select');
+        if (firstInput) {
+            firstInput.focus();
+        }
+        
+        // Cambiar estilo del checkbox cuando se modifique
+        const completadaCheckbox = document.getElementById('id_completada');
+        if (completadaCheckbox) {
+            completadaCheckbox.addEventListener('change', function() {
+                const label = this.nextElementSibling;
+                if (this.checked) {
+                    label.innerHTML = '<i class="bi bi-check-circle-fill me-2 text-success"></i>Tarea completada';
+                } else {
+                    label.innerHTML = '<i class="bi bi-check-circle me-2 text-blue"></i>Marcar como completada';
+                }
+            });
+            
+            // Aplicar estilo inicial
+            if (completadaCheckbox.checked) {
+                const label = completadaCheckbox.nextElementSibling;
+                label.innerHTML = '<i class="bi bi-check-circle-fill me-2 text-success"></i>Tarea completada';
+            }
+        }
+    });
+</script>
+{% endblock %}

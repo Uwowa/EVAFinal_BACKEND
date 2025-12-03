@@ -1,0 +1,51 @@
+{% extends 'nucleo/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 fw-bold text-blue">
+                    {% if form.instance.pk %}Editar{% else %}Nueva{% endif %} Categoría
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">{{ field.label }}</label>
+                        <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}"
+                            value="{{ field.value|default:'' }}" class="form-control" 
+                            {% if field.field.required %}required{% endif %}>
+                        {% if field.errors %}
+                        <div class="text-danger small mt-1">{{ field.errors }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="{% url 'categoria_list' %}" class="btn btn-light">Cancelar</a>
+                        <button type="submit" class="btn btn-primary px-4">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-blue {
+        color: var(--primary-blue) !important;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #6a5acd, #7b68ee);
+        border: none;
+    }
+
+    .form-control:focus {
+        border-color: #7b68ee;
+        box-shadow: 0 0 0 0.25rem rgba(123, 104, 238, 0.15);
+    }
+</style>
+{% endblock %}

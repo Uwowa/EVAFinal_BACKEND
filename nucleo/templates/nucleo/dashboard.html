@@ -1,0 +1,548 @@
+{% extends 'nucleo/base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header del Dashboard -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-speedometer2 text-blue me-2"></i>Dashboard Principal
+            </h2>
+            <p class="text-muted mb-0">Resumen general del sistema de gestión de proyectos</p>
+        </div>
+        <div class="text-muted">
+            <i class="bi bi-calendar3 me-1"></i>{% now "d/m/Y" %}
+        </div>
+    </div>
+
+    <!-- Tarjetas de Resumen Principal -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-blue-light p-2 rounded-3 me-3">
+                            <i class="bi bi-list-task fs-5 text-blue"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Total de Tareas</h6>
+                            <h2 class="fw-bold mb-0 text-blue">{{ total_tareas }}</h2>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar" style="background-color: #6a5acd; width: 100%"></div>
+                    </div>
+                    <small class="text-muted mt-2 d-block">Todas las tareas del sistema</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-success-light p-2 rounded-3 me-3">
+                            <i class="bi bi-check-circle fs-5 text-success"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Tareas Completadas</h6>
+                            <h2 class="fw-bold mb-0 text-success">{{ tareas_completadas }}</h2>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar" style="background-color: #28a745; width: {{ porcentaje_completadas }}%"></div>
+                    </div>
+                    <small class="text-muted mt-2 d-block">{{ porcentaje_completadas }}% del total</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-warning-light p-2 rounded-3 me-3">
+                            <i class="bi bi-clock fs-5 text-warning"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Tareas Pendientes</h6>
+                            <h2 class="fw-bold mb-0 text-warning">{{ tareas_pendientes }}</h2>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        {% if total_tareas > 0 %}
+                        {% widthratio tareas_pendientes total_tareas 100 as porcentaje_pendientes %}
+                        <div class="progress-bar" style="background-color: #ffc107; width: {{ porcentaje_pendientes }}%"></div>
+                        {% else %}
+                        <div class="progress-bar" style="background-color: #ffc107; width: 0%"></div>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        {% if total_tareas > 0 %}
+                        {% widthratio tareas_pendientes total_tareas 100 as porcentaje_pendientes %}
+                        {{ porcentaje_pendientes }}% del total
+                        {% else %}
+                        No hay tareas
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-purple-light p-2 rounded-3 me-3">
+                            <i class="bi bi-diagram-3 fs-5" style="color: #9370db;"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Categorías</h6>
+                            <h2 class="fw-bold mb-0" style="color: #9370db;">{{ categorias_count }}</h2>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar" style="background-color: #9370db; width: 100%"></div>
+                    </div>
+                    <small class="text-muted mt-2 d-block">Categorías disponibles</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fila Principal: Indicadores Económicos + Distribución -->
+    <div class="row mb-4">
+        <!-- Indicadores Económicos -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-semibold text-blue">
+                            <i class="bi bi-currency-exchange me-2"></i>Indicadores Económicos
+                        </h5>
+                        <span class="badge bg-blue-light text-blue">
+                            <i class="bi bi-lightning-charge me-1"></i>En tiempo real
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if indicadores.error %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                            <div>
+                                <strong>¡Atención!</strong> {{ indicadores.error }}
+                                <p class="mb-0 small mt-1">Mostrando datos de ejemplo para demostración.</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    
+                    <!-- Datos de ejemplo cuando la API falla -->
+                    <div class="row">
+                        {% for key, value in ejemplo_indicadores.items %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-0 bg-light h-100">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted mb-2">{{ key }}</h6>
+                                    <h4 class="fw-bold mb-0">
+                                        {% if 'UF' in key or 'dólar' in key|lower or 'euro' in key|lower %}
+                                        ${{ value }}
+                                        {% else %}
+                                        {{ value }}
+                                        {% endif %}
+                                    </h4>
+                                    <small class="text-muted">
+                                        {% cycle '+0.2%' '-0.1%' '+0.5%' '-0.3%' '+0.1%' as variation silent %}
+                                        <span class="{% if variation|first == '+' %}text-success{% else %}text-danger{% endif %}">
+                                            {{ variation }}
+                                        </span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="row">
+                        {% for key, value in indicadores.items %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-0 bg-light h-100">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted mb-2">{{ key }}</h6>
+                                    <h4 class="fw-bold mb-0">
+                                        {% if 'UF' in key or 'dólar' in key|lower or 'euro' in key|lower %}
+                                        ${{ value }}
+                                        {% else %}
+                                        {{ value }}
+                                        {% endif %}
+                                    </h4>
+                                    <small class="text-muted">
+                                        {% cycle '+0.2%' '-0.1%' '+0.5%' '-0.3%' '+0.1%' as variation silent %}
+                                        <span class="{% if variation|first == '+' %}text-success{% else %}text-danger{% endif %}">
+                                            {{ variation }}
+                                        </span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-4 pt-3 border-top">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-muted small">
+                                <i class="bi bi-info-circle me-1"></i>Fuente: mindicador.cl
+                            </div>
+                            <a href="https://mindicador.cl" target="_blank" class="btn btn-sm btn-outline-blue">
+                                <i class="bi bi-box-arrow-up-right me-1"></i>Ver fuente oficial
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Distribución de Tareas -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-semibold text-blue">
+                        <i class="bi bi-pie-chart me-2"></i>Distribución de Tareas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="position-relative d-inline-block">
+                            <svg width="150" height="150" viewBox="0 0 150 150" class="mb-3">
+                                <!-- Fondo del círculo -->
+                                <circle cx="75" cy="75" r="70" fill="none" stroke="#e9ecef" stroke-width="10"/>
+                                <!-- Segmento completadas -->
+                                {% if total_tareas > 0 %}
+                                {% with completadas_percent=tareas_completadas|floatformat:0 %}
+                                <circle cx="75" cy="75" r="70" fill="none" stroke="#28a745" 
+                                        stroke-width="10" stroke-linecap="round" 
+                                        stroke-dasharray="{{ completadas_percent|add:'0' }} 100"
+                                        transform="rotate(-90 75 75)"/>
+                                {% endwith %}
+                                {% endif %}
+                            </svg>
+                            <div class="position-absolute top-50 start-50 translate-middle">
+                                <span class="fw-bold fs-3">{{ porcentaje_completadas }}%</span>
+                                <div class="small text-muted">Completado</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="legend mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="color-indicator me-2" style="background-color: #28a745;"></div>
+                            <span class="flex-grow-1">Completadas</span>
+                            <span class="fw-bold">{{ tareas_completadas }} ({{ porcentaje_completadas }}%)</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="color-indicator me-2" style="background-color: #ffc107;"></div>
+                            <span class="flex-grow-1">Pendientes</span>
+                            <span class="fw-bold">{{ tareas_pendientes }} (
+                                {% if total_tareas > 0 %}
+                                {% widthratio tareas_pendientes total_tareas 100 as porcentaje_pendientes %}
+                                {{ porcentaje_pendientes }}%
+                                {% else %}
+                                0%
+                                {% endif %}
+                            )</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6 class="text-muted mb-3">
+                            <i class="bi bi-graph-up me-2"></i>Tendencia
+                        </h6>
+                        <div class="d-flex justify-content-between small">
+                            <span>Esta semana: <strong class="text-success">+3 tareas</strong></span>
+                            <span>Este mes: <strong class="text-success">+12 tareas</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fila Inferior: Últimas Tareas + Estadísticas Rápidas -->
+    <div class="row">
+        <!-- Últimas Tareas -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-semibold text-blue">
+                            <i class="bi bi-clock-history me-2"></i>Últimas Tareas
+                        </h5>
+                        <a href="{% url 'tarea_list' %}" class="btn btn-sm btn-outline-blue">
+                            <i class="bi bi-arrow-right me-1"></i>Ver todas
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr class="bg-light">
+                                    <th class="border-0 py-3">Título</th>
+                                    <th class="border-0 py-3">Categoría</th>
+                                    <th class="border-0 py-3">Estado</th>
+                                    <th class="border-0 py-3">Vencimiento</th>
+                                    <th class="border-0 py-3 text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tarea in ultimas_tareas %}
+                                <tr>
+                                    <td class="py-3 align-middle">
+                                        <div class="d-flex align-items-center">
+                                            {% if tarea.completada %}
+                                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                            {% else %}
+                                            <i class="bi bi-circle text-secondary me-2"></i>
+                                            {% endif %}
+                                            <strong>{{ tarea.titulo|truncatechars:30 }}</strong>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 align-middle">
+                                        <span class="badge bg-blue-light text-blue px-3 py-1 rounded-pill">
+                                            {{ tarea.categoria.nombre }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 align-middle">
+                                        {% if tarea.completada %}
+                                        <span class="badge bg-success bg-opacity-10 text-success px-3 py-1 rounded-pill">
+                                            Completada
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-1 rounded-pill">
+                                            Pendiente
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 align-middle">
+                                        {% if tarea.fecha_vencimiento %}
+                                        <span class="{% if tarea.fecha_vencimiento < hoy %}text-danger{% elif tarea.fecha_vencimiento == hoy %}text-warning{% else %}text-muted{% endif %}">
+                                            {{ tarea.fecha_vencimiento|date:"d/m/Y" }}
+                                        </span>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 align-middle text-end">
+                                        <a href="{% url 'tarea_update' tarea.pk %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">
+                                        <i class="bi bi-inbox fs-1 text-muted mb-2"></i>
+                                        <p class="text-muted mb-0">No hay tareas recientes</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Estadísticas Rápidas y Acciones -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-semibold text-blue">
+                        <i class="bi bi-lightning me-2"></i>Acciones Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'tarea_create' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-plus-circle me-2"></i>Nueva Tarea
+                        </a>
+                        <a href="{% url 'categoria_list' %}" class="btn btn-outline-blue">
+                            <i class="bi bi-tags me-2"></i>Gestionar Categorías
+                        </a>
+                        <a href="{% url 'csv_export' %}" class="btn btn-outline-blue">
+                            <i class="bi bi-download me-2"></i>Exportar Datos
+                        </a>
+                        <a href="{% url 'json_dump' %}" target="_blank" class="btn btn-outline-blue">
+                            <i class="bi bi-code-slash me-2"></i>Ver JSON
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-semibold text-blue">
+                        <i class="bi bi-info-circle me-2"></i>Resumen del Sistema
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item border-0 px-0 py-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Total de usuarios:</span>
+                                <strong>1</strong>
+                            </div>
+                        </div>
+                        <div class="list-group-item border-0 px-0 py-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Tareas activas:</span>
+                                <strong>{{ tareas_pendientes }}</strong>
+                            </div>
+                        </div>
+                        <div class="list-group-item border-0 px-0 py-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Tasa de completación:</span>
+                                <strong class="text-success">{{ porcentaje_completadas }}%</strong>
+                            </div>
+                        </div>
+                        <div class="list-group-item border-0 px-0 py-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Última actualización:</span>
+                                <strong>{% now "H:i" %}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos específicos para el dashboard */
+    .text-blue {
+        color: #6a5acd !important;
+    }
+    
+    .bg-blue-light {
+        background-color: rgba(106, 90, 205, 0.1) !important;
+    }
+    
+    .bg-success-light {
+        background-color: rgba(40, 167, 69, 0.1) !important;
+    }
+    
+    .bg-warning-light {
+        background-color: rgba(255, 193, 7, 0.1) !important;
+    }
+    
+    .bg-purple-light {
+        background-color: rgba(147, 112, 219, 0.1) !important;
+    }
+    
+    .btn-outline-blue {
+        color: #6a5acd;
+        border-color: #6a5acd;
+    }
+    
+    .btn-outline-blue:hover {
+        background-color: #6a5acd;
+        color: white;
+    }
+    
+    .color-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        flex-shrink: 0;
+    }
+    
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        border-radius: 12px 12px 0 0 !important;
+    }
+    
+    .progress {
+        border-radius: 3px;
+    }
+    
+    .progress-bar {
+        border-radius: 3px;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(106, 90, 205, 0.05);
+    }
+    
+    .badge {
+        font-weight: 500;
+    }
+    
+    /* Efectos hover para las tarjetas de indicadores */
+    .card.border-0.bg-light:hover {
+        transform: translateY(-3px);
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .d-flex.justify-content-between.align-items-center {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+        
+        .d-flex.justify-content-between.align-items-center div:last-child {
+            margin-top: 1rem;
+        }
+        
+        .btn-lg {
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
+        
+        svg {
+            width: 120px;
+            height: 120px;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Actualizar automáticamente la hora
+        function updateTime() {
+            const now = new Date();
+            const timeElement = document.querySelector('.list-group-item:last-child strong');
+            if (timeElement) {
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                timeElement.textContent = `${hours}:${minutes}`;
+            }
+        }
+        
+        // Actualizar cada minuto
+        setInterval(updateTime, 60000);
+        
+        // Efecto hover para tarjetas de indicadores
+        const indicatorCards = document.querySelectorAll('.card.border-0.bg-light');
+        indicatorCards.forEach(card => {
+            card.style.transition = 'all 0.3s ease';
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px)';
+                this.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            });
+        });
+    });
+</script>
+{% endblock %}
